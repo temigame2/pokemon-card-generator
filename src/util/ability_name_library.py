@@ -2,12 +2,13 @@ import json
 import random
 import re
 import string
-from mechanics.element import Element
-from mechanics.ability import Ability
-from pokemon_content.pokemon_elements import PokemonElements
-from util.gpt_call import gpt_client
 
-DEFAULT_PATH = "data/ability_names.json"
+from src.mechanics.ability import Ability
+from src.mechanics.element import Element
+from src.pokemon_content.pokemon_elements import PokemonElements
+from src.util.gpt_call import gemini_client
+
+DEFAULT_PATH = "../data/ability_names.json"
 
 
 def get_ability_name(ability: Ability) -> str:
@@ -64,7 +65,7 @@ def generate_all_ability_names_to_file(path: str, elements: list[Element]) -> li
 def generate_ability_name(ability: Ability, n: int) -> list[str]:
     ability_names = []
     prompt = generate_ability_name_prompt(ability, n)
-    response = gpt_client().get_completion(prompt, max_tokens=512)
+    response = gemini_client().get_completion(prompt)
     common_delimters_regex = r"[\n\.\,\?\!\:\;]"
     response_text = response.choices[0].text
     ability_names = re.split(common_delimters_regex, response_text)

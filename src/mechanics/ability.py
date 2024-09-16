@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from functools import cached_property
 import math
 
-from mechanics.element import NEUTRAL, Element
+from src.mechanics.element import Element, NEUTRAL
 
 CIRCLE_UNICODE = "●"
 

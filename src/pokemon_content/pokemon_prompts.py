@@ -1,6 +1,7 @@
 import string
-from mechanics.card import Card
-from util.gpt_call import gpt_client
+
+from src.mechanics.card import Card
+from src.util.gpt_call import gemini_client
 
 
 def get_visual_description(card: Card) -> str:
@@ -64,7 +65,7 @@ def get_full_subject_description(card: Card):
 
 def generate_card_name(card: Card, seen_names: set[str]) -> str:
 
-    if not gpt_client().is_openai_enabled:
+    if not gemini_client().is_gemini_enabled:
         return "Untitled Card"
 
     # Generate a name for the card.
@@ -77,10 +78,10 @@ def generate_card_name(card: Card, seen_names: set[str]) -> str:
     prompt = f"Generate a unique, orignal, creative,{additional_modifier} {card.style.subject_type} name for a {get_visual_description(card)}"
     prompt += f" (without using the word {card.style.subject_type.lower()} or {card.element.name.lower()}):\n"
     print(prompt)
-    response = gpt_client().get_completion(prompt, max_tokens=256, n=5)
+    response = gemini_client().get_completion(prompt)
 
     potential_names = set()
-    for potential_name in response.choices:
+    for potential_name in response:
         name = potential_name.text
         name = name.strip()
         name = "".join([c for c in name if c.isalpha() or c == " " or c == "-"])
@@ -99,14 +100,14 @@ def generate_card_name(card: Card, seen_names: set[str]) -> str:
 
 def generate_desc(card: Card) -> str:
     # Generate a name for the monster.
-    if gpt_client().is_openai_enabled:
+    if gemini_client().is_gemini_enabled:
         prompt = f"Generate a short, original, creative Pokedex description for {card.name}, {get_visual_description(card)}. "
         prompt += f"It has the following abilities: {', '.join([ability.name for ability in card.abilities])}. "
         prompt += f"Be creative about its day-to-day life. "
         prompt += f" (do not use the word {card.style.subject.lower()} or {card.element.name.lower()} or the ability names):\n"
         print(prompt)
-        response = gpt_client().get_completion(prompt, max_tokens=256)
-        desc = response.choices[0].text
+        response = gemini_client().get_completion(prompt)
+        desc = response.text
         desc = desc.strip()
         return desc
     else:

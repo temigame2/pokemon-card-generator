@@ -1,30 +1,19 @@
 from dataclasses import dataclass
 import random
-from pokemon_content.pokemon_content_pool import (
-    AMBIENCE_BY_ELEMENT,
-    get_closest_match,
-    get_creature_types,
-    get_environments,
-    get_random_ambience,
-    get_random_detail_adjective,
-    get_random_rarity_adjective,
-    get_random_series_adjective,
-    get_random_style_suffix,
-)
-from content.collection import Collection
-from content.style import Style
-from mechanics.element import Element
-from mechanics.card import Card
-from mechanics.rarity import Rarity
-from mechanics.ability import Ability
-from pokemon_content.pokemon_prompts import (
-    generate_card_name,
-    generate_desc,
-    get_image_prompt,
-    get_visual_description,
-)
-from util.ability_name_library import get_ability_name
-from util.gpt_call import gpt_client
+
+from src.content.collection import Collection
+from src.content.style import Style
+from src.mechanics.ability import Ability
+from src.mechanics.card import Card
+from src.mechanics.element import Element
+from src.mechanics.rarity import Rarity
+from src.pokemon_content.pokemon_content_pool import get_closest_match, get_creature_types, get_random_detail_adjective, \
+    get_environments, get_random_rarity_adjective, get_random_series_adjective, AMBIENCE_BY_ELEMENT, \
+    get_random_ambience, get_random_style_suffix
+from src.pokemon_content.pokemon_prompts import get_image_prompt, get_visual_description, generate_card_name, \
+    generate_desc
+from src.util.ability_name_library import get_ability_name
+from src.util.gpt_call import gemini_client
 
 
 @dataclass
@@ -80,7 +69,7 @@ class PokemonCollection(Collection):
         card.visual_description = get_visual_description(card)
 
         # Generate a name for the card.
-        if gpt_client().is_openai_enabled:
+        if gemini_client().is_gemini_enabled:
             card.name = generate_card_name(card, self.card_names_seen)
             card.description = generate_desc(card)
 
