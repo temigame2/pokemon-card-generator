@@ -72,7 +72,7 @@ def main():
         else:
             n_monsters_to_generate = number_of_monsters
 
-        for i in range(n_monsters_to_generate):
+        for i in range(1):
             current_element = (
                 element if element else all_elements[i % len(all_elements)]
             )
