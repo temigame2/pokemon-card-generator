@@ -2,8 +2,6 @@ from dataclasses import dataclass, field
 from functools import cached_property
 
 from src.content.style import Style
-from src.mechanics.ability import Ability
-from src.mechanics.element import Element
 from src.mechanics.rarity import Rarity
 
 STAR_UNICODE = "★ "
@@ -14,11 +12,11 @@ class Card:
 
     index: int
     name: str
-    element: Element
     rarity: Rarity
     hp: int
-    abilities: list[Ability] = field(default_factory=list)
-    description: str = ""
+    atk: int
+    res: int
+    spd: int
     part_of_evolution: bool = False
     style: Style = field(default_factory=Style)
 
@@ -27,15 +25,13 @@ class Card:
 
     def __repr__(self):
         rarity_stars = STAR_UNICODE * (self.rarity.index + 1)
-        message = f"{self.name} ({self.element.ascii_name()})\n"
+        message = f"{self.name} \n"
         message += f"HP: {self.hp}\n"
+        message += f"ATK: {self.atk}\n"
+        message += f"RES: {self.res}\n"
+        message += f"SPD: {self.spd}\n"
         message += f"Rarity: {rarity_stars} ({self.rarity.name})\n"
-        message += f"Abilities:\n"
-        for ability in self.abilities:
-            message += f"  {ability}\n"
 
-        message += f"Description:\n"
-        message += f"{self.description}\n\n"
         message += f"Image Prompt:\n"
         message += f"{self.image_prompt}\n\n"
         return message
@@ -44,12 +40,12 @@ class Card:
         return {
             "index": self.index,
             "name": self.name,
-            "description": self.description,
-            "element": self.element.name,
             "rarity": self.rarity.name,
             "rarity_index": self.rarity.index,
             "hp": self.hp,
-            "abilities": [ability.to_json() for ability in self.abilities],
+            "atk": self.atk,
+            "res": self.res,
+            "spd": self.spd,
             "image_prompt": self.image_prompt,
             "image_file": self.image_file,
         }

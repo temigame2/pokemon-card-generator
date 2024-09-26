@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from functools import cached_property
 import json
 import os
 import random
@@ -45,21 +44,16 @@ class Collection:
             random.randint(0, rarity_range) if rarity_range > 0 else 0
         )
         new_cards = []
-        card_style = None
 
-        for i in range(n):
+        for i in range(1):
             rarity_index = min(len(self.rarities) - 1, starting_rarity_index + i)
             rarity = self.rarities[rarity_index]
             card = self.generate_card(
                 element=element,
                 rarity=rarity,
-                inherited_style=card_style,
                 series_index=i if n > 1 else None,
                 subject_override=subject_override,
             )
-
-            if i == 0:
-                card_style = card.style
 
             new_cards.append(card)
 

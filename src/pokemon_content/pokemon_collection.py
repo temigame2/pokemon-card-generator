@@ -3,16 +3,13 @@ import random
 
 from src.content.collection import Collection
 from src.content.style import Style
-from src.mechanics.ability import Ability
 from src.mechanics.card import Card
 from src.mechanics.element import Element
 from src.mechanics.rarity import Rarity
 from src.pokemon_content.pokemon_content_pool import get_closest_match, get_creature_types, get_random_detail_adjective, \
-    get_environments, get_random_rarity_adjective, get_random_series_adjective, AMBIENCE_BY_ELEMENT, \
-    get_random_ambience, get_random_style_suffix
-from src.pokemon_content.pokemon_prompts import get_image_prompt, get_visual_description, generate_card_name, \
-    generate_desc
-from src.util.ability_name_library import get_ability_name
+    get_random_rarity_adjective, get_random_series_adjective, AMBIENCE_BY_ELEMENT, \
+    get_random_ambience
+from src.pokemon_content.pokemon_prompts import get_image_prompt, get_visual_description, generate_card_name
 from src.util.gpt_call import gemini_client
 
 
@@ -40,16 +37,16 @@ class PokemonCollection(Collection):
             max_ability_points = self.get_points_budget(rarity.index, 1)
 
         hp_points = random.randint(0, max_ability_points // 2)
-        ability_points = max_ability_points - hp_points
-        ability_costs = self.get_ability_points_costs(ability_points, rarity.index)
-        abilities = self.generate_abilities(element, ability_costs)
 
-        for ability in abilities:
-            ability.name = get_ability_name(ability)
 
         # Calculate HP
         bonus_hp_points = max_ability_points + (hp_points * self.ABILITY_TO_HP_PTS)
-        hp = 10 * bonus_hp_points
+
+        hp = random.randint(1,10) * bonus_hp_points
+
+        atk = random.randint(4,10)
+        res = random.randint(1,8)
+        spd = random.randint(1,10)
 
         style = self.generate_style(
             inherited_style, element, rarity, series_index, subject_override
@@ -58,10 +55,11 @@ class PokemonCollection(Collection):
         card = Card(
             index=len(self.cards) + 1,
             name="Untitled Card",
-            element=element,
             rarity=rarity,
-            abilities=abilities,
             hp=hp,
+            atk=atk,
+            res=res,
+            spd=spd,
             style=style,
         )
 
@@ -71,7 +69,6 @@ class PokemonCollection(Collection):
         # Generate a name for the card.
         if gemini_client().is_gemini_enabled:
             card.name = generate_card_name(card, self.card_names_seen)
-            card.description = generate_desc(card)
 
         card.image_prompt = get_image_prompt(card)
         card.visual_description = get_visual_description(card)
@@ -125,14 +122,9 @@ class PokemonCollection(Collection):
             detail_adjective = get_random_detail_adjective(element=element)
             style.detail = detail.text(detail_adjective)
 
-            # Pick the environment
-            potential_environments = get_environments(element)
-            style.environment = random.choice(potential_environments)
-
         # Pick adjective(s) for the subject.
         rarity_prefix = get_random_rarity_adjective(rarity.index)
         series_prefix = get_random_series_adjective(series_index)
-        element_prefix = f"{element.name.lower()}-type"
 
         if series_index is not None:
             size_prefix = series_prefix
@@ -144,7 +136,6 @@ class PokemonCollection(Collection):
         style.subject_adjectives = [
             *self.theme_style.subject_adjectives,
             size_prefix,
-            element_prefix,
         ]
 
         # Set the ambience
@@ -152,30 +143,9 @@ class PokemonCollection(Collection):
             # Use the last background for the final card in the series.
             style.ambience = AMBIENCE_BY_ELEMENT.get(element)[-1]
         else:
-            style.ambience = get_random_ambience(element)
-
-        # Set the style suffix
-        style.style_suffix = (
-            f"{get_random_style_suffix(series_index)} {self.theme_style.style_suffix}"
-        )
+            style.ambience = get_random_ambience(element) + " background"
 
         return style
-
-    def generate_abilities(self, element: Element, ability_costs: list[int]):
-        abilities = []
-        for i, cost in enumerate(ability_costs):
-            is_primary = i == 0
-            if (
-                not is_primary
-                and random.random() < PokemonCollection.NEUTRAL_ELEMENT_CHANCE
-            ):
-                ability_element = self.get_default_element()
-            else:
-                ability_element = element
-
-            ability = PokemonCollection.generate_ability(ability_element, cost)
-            abilities.append(ability)
-        return abilities
 
     @staticmethod
     def get_points_budget(rarity_index: int, series_index: int) -> int:
@@ -183,19 +153,6 @@ class PokemonCollection(Collection):
         rarity_bonus = rarity_index
         series_bonus = series_index - 1
         return PokemonCollection.BASE_POINTS + rarity_bonus + series_bonus
-
-    @staticmethod
-    def generate_ability(element: Element, cost: int) -> Ability:
-
-        is_mix = (
-            not element.is_neutral
-            and cost > 1
-            and (random.random() < PokemonCollection.MIXED_ELEMENT_CHANCE)
-        )
-        ability = Ability(
-            name="New Ability", element=element, cost=cost, is_mixed_element=is_mix
-        )
-        return ability
 
     @staticmethod
     def get_ability_points_costs(ability_points: int, rarity_index: int) -> list[str]:

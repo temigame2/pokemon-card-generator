@@ -1,0 +1,4 @@
+pillow
+google-generativeai
+python-dotenv
+retry
